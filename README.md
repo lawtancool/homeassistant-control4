@@ -16,7 +16,7 @@ name: The name that Home Assistant will use to identify the device.
 scan_interval: How often to query the Control4 controller about the state of the device, in seconds.
 ~~~~
 
-Lights:
+**Lights:**
 ~~~~
 light:
   - platform: control4
@@ -25,7 +25,7 @@ light:
     name: Piano Room
     scan_interval: 10
 ~~~~
-Thermostats:
+**Thermostats:**
 ~~~~
 climate:
   - platform: control4
@@ -34,7 +34,7 @@ climate:
     name: Downstairs
     scan_interval: 20
 ~~~~
-Alarm System:
+**Alarm System:**
 ~~~~
 alarm_control_panel:
   - platform: control4
@@ -43,7 +43,7 @@ alarm_control_panel:
     name: DSC Alarm
     scan_interval: 10
 ~~~~
-Media volume control:
+**Media volume control:**
 (The `proxy_id` needs to be the ID of the room inside Composer Pro)
 ~~~~
 media_player:
@@ -53,3 +53,7 @@ media_player:
     name: Kitchen Speakers
     scan_interval: 10
 ~~~~
+
+Acknowledgements:
+------
+This is heavily based on work by itsfrosty: https://github.com/itsfrosty/homeassistant-control4
