@@ -78,6 +78,7 @@ class C4Light(Light):
         else:
             yield from self.update_state(STATE_VARIABLE_ID, 1)
             self._state = True
+            self._brightness = 255
 
     @asyncio.coroutine
     def async_turn_off(self, **kwargs):

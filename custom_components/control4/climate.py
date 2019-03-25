@@ -12,12 +12,12 @@ import urllib.parse as urlparse
 from urllib.parse import urlencode
 import json
 
-from homeassistant.components.climate import (
-    STATE_HEAT, STATE_COOL, STATE_IDLE, ClimateDevice, PLATFORM_SCHEMA,
-    ATTR_TARGET_TEMP_HIGH, ATTR_TARGET_TEMP_LOW, ATTR_CURRENT_TEMPERATURE,
+from homeassistant.components.climate import ClimateDevice, PLATFORM_SCHEMA
+from homeassistant.components.climate.const import (
+    STATE_HEAT, STATE_COOL, STATE_IDLE, ATTR_TARGET_TEMP_HIGH, ATTR_TARGET_TEMP_LOW, ATTR_CURRENT_TEMPERATURE,
     ATTR_OPERATION_MODE, STATE_AUTO, SUPPORT_TARGET_TEMPERATURE, SUPPORT_TARGET_TEMPERATURE_HIGH, SUPPORT_TARGET_TEMPERATURE_LOW, SUPPORT_OPERATION_MODE, )
 from homeassistant.const import (CONF_NAME, CONF_TIMEOUT, TEMP_FAHRENHEIT,
-        TEMP_CELSIUS, STATE_OFF, STATE_ON)
+        TEMP_CELSIUS, STATE_OFF, STATE_ON, ATTR_TEMPERATURE)
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.template import Template
@@ -218,11 +218,11 @@ class C4ClimateDevice(ClimateDevice):
         return self._target_temp
 
     def set_temperature(self, **kwargs):
-        if 'target_temp' not in kwargs:
+        temperature = kwargs.get(ATTR_TEMPERATURE)
+        if temperature is None:
             return
-        if int(kwargs['target_temp']) != self._target_temp:
-            run_coroutine_threadsafe(self.update_state(TARGET_TEMP_LOW_VARIABLE_ID, int(kwargs['target_temp'])), self.hass.loop).result()
-            self._target_temp = int(kwargs['target_temp'])
+        run_coroutine_threadsafe(self.update_state(TARGET_TEMP_LOW_VARIABLE_ID, temperature), self.hass.loop).result()
+        self._target_temp = temperature
         #else:
         #    run_coroutine_threadsafe(self.update_state(TARGET_TEMP_HIGH_VARIABLE_ID, int(kwargs['target_temp_high'])), self.hass.loop).result()
         #    self._target_temp_high = int(kwargs['target_temp_high'])
@@ -254,7 +254,7 @@ class C4ClimateDevice(ClimateDevice):
         try:
             with async_timeout.timeout(self._timeout, loop=self.hass.loop):
                 request = yield from websession.get(self.get_url(self._base_url, params))
-                _LOGGER.info(params)
+                _LOGGER.debug(params)
         except (asyncio.TimeoutError, aiohttp.errors.ClientError):
             _LOGGER.error("Error while turn on %s", self._base_url)
             return
