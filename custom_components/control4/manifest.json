@@ -1,0 +1,8 @@
+{
+  "domain": "control4",
+  "name": "Control4",
+  "documentation": "https://github.com/lawtancool/homeassistant-control4",
+  "dependencies": [],
+  "codeowners": ["@lawtancool"],
+  "requirements": []
+}
