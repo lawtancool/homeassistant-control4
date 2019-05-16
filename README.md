@@ -6,6 +6,7 @@ How to use:
 - Install the Web2Way driver into your Control4 project using Composer Pro (2.9+ recommended): https://github.com/itsfrosty/control4-2way-web-driver (You may need your dealer to do this if you don't have access to the Control4 Composer Pro program)
 - Copy the custom_components into your ~/.homeassistant/ folder
 - Find the `proxy_id` of each Control4 device you want to integrate inside Composer Pro, and include them in your `configuration.yaml`
+- **NOTE**: If you have a lot of Control4 devices and you are experiencing large delays in executing actions, try randomizing your `scan_interval`, setting different devices to slightly different values; this should help prevent Home Assistant from overwhelming the Control4 controller with refresh requests. However, don't set this value too high, otherwise Control4 state changes will take a long time to be reflected inside Home Assistant.
 
 Sample Home Assistant `configuration.yaml` entries:
 -------
