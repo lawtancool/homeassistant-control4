@@ -132,7 +132,7 @@ class C4AlarmControlPanel(alarm.AlarmControlPanel):
           params = {
               'command': 'get',
               'proxyID': self._proxy_id,
-              'variableID': ','.join([USE_V2_VARIABLE_ID])
+              'variableID': USE_V2_VARIABLE_ID
           }
         else:
           params = {
