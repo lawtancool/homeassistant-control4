@@ -89,7 +89,7 @@ class C4AlarmControlPanel(alarm.AlarmControlPanel):
         elif self._armedaway == "1":
             return STATE_ALARM_ARMED_AWAY
         else:
-            _LOGGER.error("Alarm state invalid!")
+            _LOGGER.error("Alarm state invalid!", self._disarmed, self._armedhome, self._armedaway)
 
     def get_url(self, url, params):
         url_parts = list(urlparse.urlparse(url))
