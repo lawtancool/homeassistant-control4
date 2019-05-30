@@ -159,17 +159,17 @@ class C4AlarmControlPanel(alarm.AlarmControlPanel):
         json_text = json.loads(text)
         if self._use_v2:
           if json_text[USE_V2_VARIABLE_ID] == "Away":
-            self._disarmed = 0
-            self._armedhome = 0
-            self._armedaway = 1
+            self._disarmed = "0"
+            self._armedhome = "0"
+            self._armedaway = "1"
           elif json_text[USE_V2_VARIABLE_ID] == "Home":       
-            self._disarmed = 0
-            self._armedhome = 1
-            self._armedaway = 0
+            self._disarmed = "0"
+            self._armedhome = "1"
+            self._armedaway = "0"
           elif json_text[USE_V2_VARIABLE_ID] == "Disarmed":       
-            self._disarmed = 1
-            self._armedhome = 0
-            self._armedaway = 0
+            self._disarmed = "1"
+            self._armedhome = "0"
+            self._armedaway = "0"
           else:
             _LOGGER.warning('Invalid value received')
         else:
