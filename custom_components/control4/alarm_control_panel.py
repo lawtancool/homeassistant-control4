@@ -163,7 +163,7 @@ class C4AlarmControlPanel(alarm.AlarmControlPanel):
             self._disarmed = "0"
             self._armedhome = "0"
             self._armedaway = "1"
-          elif json_text[USE_V2_VARIABLE_ID] == "Home":       
+          elif json_text[USE_V2_VARIABLE_ID] == "Stay":       
             self._disarmed = "0"
             self._armedhome = "1"
             self._armedaway = "0"
