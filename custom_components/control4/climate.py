@@ -25,13 +25,14 @@ from homeassistant.components.climate.const import (
     ATTR_TARGET_TEMP_HIGH,
     ATTR_TARGET_TEMP_LOW,
     ATTR_CURRENT_TEMPERATURE,
+    ATTR_OPERATION_MODE,
     SUPPORT_TARGET_TEMPERATURE,
 )
 from homeassistant.const import (
     CONF_NAME,
     CONF_TIMEOUT,
     TEMP_FAHRENHEIT,
-    TEMP_CELSIUS,
+    TEMP_CELSIUS, 
     ATTR_TEMPERATURE,
 )
 =======
@@ -53,20 +54,28 @@ DEFAULT_NAME = 'Control4 Light'
 DEFAULT_TIMEOUT = 10
 <<<<<<< HEAD
 STATE_VARIABLE_ID = '1107'
+<<<<<<< HEAD
 MODE_VARIABLE_ID = '1104'
 =======
 STATE_VARIABLE_ID = '1104'
 OPERATION_VARIABLE_ID = '1104'
 >>>>>>> parent of 14c0cca... initial changes - not done
+=======
+OPERATION_VARIABLE_ID = '1104'
+>>>>>>> parent of 19db603... more changes - seems that it should work now
 CURRENT_TEMP_VARIABLE_ID = '1131'
 UNIT_VARIABLE_ID = '1100'
 TARGET_TEMP_HIGH_VARIABLE_ID = '1135'
 TARGET_TEMP_LOW_VARIABLE_ID = '1133'
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+#SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE | SUPPORT_TARGET_TEMPERATURE_HIGH | SUPPORT_TARGET_TEMPERATURE_LOW | SUPPORT_OPERATION_MODE)
+>>>>>>> parent of 19db603... more changes - seems that it should work now
 SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE)
 
-MODE_MAPPING = {
+STATE_MAPPING = {
     "Off": HVAC_MODE_OFF,
     "Cool": HVAC_MODE_COOL,
     "Heat": HVAC_MODE_HEAT,
@@ -118,8 +127,8 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
 class C4ClimateDevice(ClimateDevice):
 
     def __init__(self, hass, name, base_url, proxy_id, timeout):
-        self._state = HVAC_STATE_OFF
-        self._hvac_mode = CURRENT_HVAC_IDLE
+        self._state = STATE_OFF
+        self._operation = STATE_IDLE
         self.hass = hass
         self._name = name
         self._base_url = base_url;
@@ -129,7 +138,7 @@ class C4ClimateDevice(ClimateDevice):
        # self._target_temp_high = 0
         self._target_temp = 0
         self._unit = TEMP_FAHRENHEIT
-        self._hvac_modes = [HVAC_STATE_OFF, HVAC_STATE_HEAT, HVAC_STATE_COOL, HVAC_MODE_HEAT_COOL]
+        self._operation_list = [STATE_OFF, STATE_HEAT, STATE_COOL, STATE_AUTO]
 
     @property
     def name(self):
@@ -141,9 +150,9 @@ class C4ClimateDevice(ClimateDevice):
         return SUPPORT_FLAGS
 
     @property
-    def hvac_modes(self):
+    def operation_list(self):
         """List of available operation modes."""
-        return self._hvac_modes
+        return self._operation_list
 
     @property
     def temperature_unit(self):
@@ -158,8 +167,8 @@ class C4ClimateDevice(ClimateDevice):
         return self._current_temp
 
     @property
-    def hvac_mode(self):
-        return self._hvac_mode
+    def current_operation(self):
+        return self._operation
 
     @property
     def target_temperature_high(self):
@@ -170,8 +179,8 @@ class C4ClimateDevice(ClimateDevice):
         return self._target_temp_low
 
     def __init__(self, hass, name, base_url, proxy_id, timeout):
-        self._state = HVAC_STATE_OFF
-        self._hvac_mode = CURRENT_HVAC_IDLE
+        self._state = STATE_OFF
+        self._operation = STATE_IDLE
         self.hass = hass
         self._name = name
         self._base_url = base_url;
@@ -181,7 +190,7 @@ class C4ClimateDevice(ClimateDevice):
        # self._target_temp_high = 0
         self._target_temp = 0
         self._unit = TEMP_FAHRENHEIT
-        self._hvac_modes = [HVAC_STATE_OFF, HVAC_STATE_HEAT, HVAC_STATE_COOL, HVAC_MODE_HEAT_COOL]
+        self._operation_list = [STATE_OFF, STATE_HEAT, STATE_COOL, STATE_AUTO]
 
     @property
     def name(self):
@@ -200,8 +209,8 @@ class C4ClimateDevice(ClimateDevice):
         return self._current_temp
 
     @property
-    def hvac_mode(self):
-        return self._hvac_mode
+    def current_operation(self):
+        return self._operation
 
     @property
     def target_temperature_high(self):
@@ -212,8 +221,8 @@ class C4ClimateDevice(ClimateDevice):
         return self._target_temp_low
 
     def __init__(self, hass, name, base_url, proxy_id, timeout):
-        self._state = HVAC_STATE_OFF
-        self._hvac_mode = CURRENT_HVAC_IDLE
+        self._state = STATE_OFF
+        self._operation = STATE_IDLE
         self.hass = hass
         self._name = name
         self._base_url = base_url;
@@ -223,7 +232,7 @@ class C4ClimateDevice(ClimateDevice):
         #self._target_temp_high = 0
         self._target_temp = 0
         self._unit = TEMP_FAHRENHEIT
-        self._hvac_modes = [HVAC_STATE_OFF, HVAC_STATE_HEAT, HVAC_STATE_COOL, HVAC_MODE_HEAT_COOL]
+        self._operation_list = [STATE_OFF, STATE_HEAT, STATE_COOL, STATE_AUTO]
 
     @property
     def name(self):
@@ -242,9 +251,9 @@ class C4ClimateDevice(ClimateDevice):
         return self._current_temp
 
     @property
-    def hvac_mode(self):
+    def current_operation(self):
         """Return current operation ie. heat, cool, idle."""
-        return self._hvac_mode
+        return self._operation
 
     #@property
     #def target_temperature_high(self):
@@ -264,10 +273,10 @@ class C4ClimateDevice(ClimateDevice):
         #    run_coroutine_threadsafe(self.update_state(TARGET_TEMP_HIGH_VARIABLE_ID, int(kwargs['target_temp_high'])), self.hass.loop).result()
         #    self._target_temp_high = int(kwargs['target_temp_high'])
 
-    def set_hvac_mode(self, hvac_mode):
-        run_coroutine_threadsafe(self.update_state(MODE_VARIABLE_ID, hvac_mode),
+    def set_operation_mode(self, operation_mode):
+        run_coroutine_threadsafe(self.update_state(OPERATION_VARIABLE_ID, operation_mode),
                                  self.hass.loop).result()
-        self._hvac_mode = hvac_mode
+        self._operation_mode = operation_mode
 
     def get_url(self, url, params):
         url_parts = list(urlparse.urlparse(url))
@@ -309,7 +318,7 @@ class C4ClimateDevice(ClimateDevice):
         params = {
             'command': 'get',
             'proxyID': self._proxy_id,
-            'variableID': ','.join([STATE_VARIABLE_ID, MODE_VARIABLE_ID,
+            'variableID': ','.join([STATE_VARIABLE_ID, OPERATION_VARIABLE_ID,
                 CURRENT_TEMP_VARIABLE_ID, UNIT_VARIABLE_ID, TARGET_TEMP_HIGH_VARIABLE_ID,
                 TARGET_TEMP_LOW_VARIABLE_ID])
         }
@@ -332,7 +341,7 @@ class C4ClimateDevice(ClimateDevice):
 
         try:
             self._state = STATE_MAPPING[json_text[STATE_VARIABLE_ID]]
-            self._hvac_mode = MODE_MAPPING[json_text[MODE_VARIABLE_ID]]
+            self._operation = OPERATION_MAPPING[json_text[OPERATION_VARIABLE_ID]]
             self._current_temp = int(json_text[CURRENT_TEMP_VARIABLE_ID])
             #self._target_temp_high = int(json_text[TARGET_TEMP_HIGH_VARIABLE_ID])
             self._target_temp = int(json_text[TARGET_TEMP_LOW_VARIABLE_ID])
