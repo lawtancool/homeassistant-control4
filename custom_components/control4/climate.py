@@ -14,33 +14,10 @@ import json
 
 from homeassistant.components.climate import ClimateDevice, PLATFORM_SCHEMA
 from homeassistant.components.climate.const import (
-<<<<<<< HEAD
-    CURRENT_HVAC_COOL,
-    CURRENT_HVAC_HEAT,
-    CURRENT_HVAC_IDLE,
-    HVAC_MODE_OFF,
-    HVAC_MODE_HEAT,
-    HVAC_MODE_COOL,
-    HVAC_MODE_HEAT_COOL,
-    ATTR_TARGET_TEMP_HIGH,
-    ATTR_TARGET_TEMP_LOW,
-    ATTR_CURRENT_TEMPERATURE,
-    ATTR_OPERATION_MODE,
-    SUPPORT_TARGET_TEMPERATURE,
-)
-from homeassistant.const import (
-    CONF_NAME,
-    CONF_TIMEOUT,
-    TEMP_FAHRENHEIT,
-    TEMP_CELSIUS, 
-    ATTR_TEMPERATURE,
-)
-=======
     STATE_HEAT, STATE_COOL, STATE_IDLE, ATTR_TARGET_TEMP_HIGH, ATTR_TARGET_TEMP_LOW, ATTR_CURRENT_TEMPERATURE,
     ATTR_OPERATION_MODE, STATE_AUTO, SUPPORT_TARGET_TEMPERATURE, SUPPORT_TARGET_TEMPERATURE_HIGH, SUPPORT_TARGET_TEMPERATURE_LOW, SUPPORT_OPERATION_MODE, )
 from homeassistant.const import (CONF_NAME, CONF_TIMEOUT, TEMP_FAHRENHEIT,
         TEMP_CELSIUS, STATE_OFF, STATE_ON, ATTR_TEMPERATURE)
->>>>>>> parent of 14c0cca... initial changes - not done
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.template import Template
@@ -52,35 +29,13 @@ CONF_PROXY_ID = 'proxy_id'
 
 DEFAULT_NAME = 'Control4 Light'
 DEFAULT_TIMEOUT = 10
-<<<<<<< HEAD
-STATE_VARIABLE_ID = '1107'
-<<<<<<< HEAD
-MODE_VARIABLE_ID = '1104'
-=======
 STATE_VARIABLE_ID = '1104'
 OPERATION_VARIABLE_ID = '1104'
->>>>>>> parent of 14c0cca... initial changes - not done
-=======
-OPERATION_VARIABLE_ID = '1104'
->>>>>>> parent of 19db603... more changes - seems that it should work now
 CURRENT_TEMP_VARIABLE_ID = '1131'
 UNIT_VARIABLE_ID = '1100'
 TARGET_TEMP_HIGH_VARIABLE_ID = '1135'
 TARGET_TEMP_LOW_VARIABLE_ID = '1133'
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-#SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE | SUPPORT_TARGET_TEMPERATURE_HIGH | SUPPORT_TARGET_TEMPERATURE_LOW | SUPPORT_OPERATION_MODE)
->>>>>>> parent of 19db603... more changes - seems that it should work now
-SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE)
-
-STATE_MAPPING = {
-    "Off": HVAC_MODE_OFF,
-    "Cool": HVAC_MODE_COOL,
-    "Heat": HVAC_MODE_HEAT,
-    "Auto": HVAC_MODE_HEAT_COOL
-=======
 #SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE | SUPPORT_TARGET_TEMPERATURE_HIGH | SUPPORT_TARGET_TEMPERATURE_LOW | SUPPORT_OPERATION_MODE)
 SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE | SUPPORT_OPERATION_MODE)
 
@@ -89,7 +44,6 @@ STATE_MAPPING = {
     "Cool": STATE_COOL,
     "Heat": STATE_HEAT,
     "Auto": STATE_AUTO
->>>>>>> parent of 14c0cca... initial changes - not done
 }
 
 OPERATION_MAPPING = {
