@@ -11,6 +11,7 @@ import voluptuous as vol
 import urllib.parse as urlparse
 from urllib.parse import urlencode
 import json
+import asyncio
 
 from homeassistant.components.climate import ClimateDevice, PLATFORM_SCHEMA
 from homeassistant.components.climate.const import (
@@ -36,8 +37,6 @@ from homeassistant.const import (
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.template import Template
-from homeassistant.util.async_ import run_callback_threadsafe
-from homeassistant.util.async_ import run_coroutine_threadsafe
 
 CONF_BASE_URL = 'base_url'
 CONF_PROXY_ID = 'proxy_id'
@@ -235,14 +234,14 @@ class C4ClimateDevice(ClimateDevice):
         temperature = kwargs.get(ATTR_TEMPERATURE)
         if temperature is None:
             return
-        run_coroutine_threadsafe(self.update_state(TARGET_TEMP_LOW_VARIABLE_ID, temperature), self.hass.loop).result()
+        asyncio.run_coroutine_threadsafe(self.update_state(TARGET_TEMP_LOW_VARIABLE_ID, temperature), self.hass.loop).result()
         self._target_temp = temperature
         #else:
-        #    run_coroutine_threadsafe(self.update_state(TARGET_TEMP_HIGH_VARIABLE_ID, int(kwargs['target_temp_high'])), self.hass.loop).result()
+        #    asyncio.run_coroutine_threadsafe(self.update_state(TARGET_TEMP_HIGH_VARIABLE_ID, int(kwargs['target_temp_high'])), self.hass.loop).result()
         #    self._target_temp_high = int(kwargs['target_temp_high'])
 
     def set_hvac_mode(self, hvac_mode):
-        run_coroutine_threadsafe(self.update_state(MODE_VARIABLE_ID, hvac_mode),
+        asyncio.run_coroutine_threadsafe(self.update_state(MODE_VARIABLE_ID, hvac_mode),
                                  self.hass.loop).result()
         self._hvac_mode = hvac_mode
 
