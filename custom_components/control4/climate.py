@@ -94,8 +94,8 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
 class C4ClimateDevice(ClimateDevice):
 
     def __init__(self, hass, name, base_url, proxy_id, timeout):
-        self._state = HVAC_STATE_OFF
-        self._hvac_mode = CURRENT_HVAC_IDLE
+        self._state = CURRENT_HVAC_IDLE
+        self._hvac_mode = HVAC_MODE_OFF
         self.hass = hass
         self._name = name
         self._base_url = base_url;
@@ -105,7 +105,7 @@ class C4ClimateDevice(ClimateDevice):
        # self._target_temp_high = 0
         self._target_temp = 0
         self._unit = TEMP_FAHRENHEIT
-        self._hvac_modes = [HVAC_STATE_OFF, HVAC_STATE_HEAT, HVAC_STATE_COOL, HVAC_MODE_HEAT_COOL]
+        self._hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_HEAT_COOL]
 
     @property
     def name(self):
@@ -146,8 +146,8 @@ class C4ClimateDevice(ClimateDevice):
         return self._target_temp_low
 
     def __init__(self, hass, name, base_url, proxy_id, timeout):
-        self._state = HVAC_STATE_OFF
-        self._hvac_mode = CURRENT_HVAC_IDLE
+        self._state = CURRENT_HVAC_IDLE
+        self._hvac_mode = HVAC_MODE_OFF
         self.hass = hass
         self._name = name
         self._base_url = base_url;
@@ -157,7 +157,7 @@ class C4ClimateDevice(ClimateDevice):
        # self._target_temp_high = 0
         self._target_temp = 0
         self._unit = TEMP_FAHRENHEIT
-        self._hvac_modes = [HVAC_STATE_OFF, HVAC_STATE_HEAT, HVAC_STATE_COOL, HVAC_MODE_HEAT_COOL]
+        self._hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_HEAT_COOL]
 
     @property
     def name(self):
@@ -188,8 +188,8 @@ class C4ClimateDevice(ClimateDevice):
         return self._target_temp_low
 
     def __init__(self, hass, name, base_url, proxy_id, timeout):
-        self._state = HVAC_STATE_OFF
-        self._hvac_mode = CURRENT_HVAC_IDLE
+        self._state = CURRENT_HVAC_IDLE
+        self._hvac_mode = HVAC_MODE_OFF
         self.hass = hass
         self._name = name
         self._base_url = base_url;
@@ -199,7 +199,7 @@ class C4ClimateDevice(ClimateDevice):
         #self._target_temp_high = 0
         self._target_temp = 0
         self._unit = TEMP_FAHRENHEIT
-        self._hvac_modes = [HVAC_STATE_OFF, HVAC_STATE_HEAT, HVAC_STATE_COOL, HVAC_MODE_HEAT_COOL]
+        self._hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_HEAT_COOL]
 
     @property
     def name(self):
