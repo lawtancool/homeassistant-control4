@@ -132,6 +132,10 @@ class C4ClimateDevice(ClimateDevice):
     @property
     def current_temperature(self):
         return self._current_temp
+        
+    @property
+    def target_temperature(self):
+        return self._target_temp
 
     @property
     def hvac_mode(self):
@@ -141,13 +145,13 @@ class C4ClimateDevice(ClimateDevice):
     def hvac_action(self):
         return self._state
 
-    @property
-    def target_temperature_high(self):
-        return self._target_temp_high
-
-    @property
-    def target_temperature_low(self):
-        return self._target_temp_low
+    # @property
+    # def target_temperature_high(self):
+    #     return self._target_temp_high
+    #
+    # @property
+    # def target_temperature_low(self):
+    #     return self._target_temp_low
 
     # def __init__(self, hass, name, base_url, proxy_id, timeout):
     #     self._state = CURRENT_HVAC_IDLE
