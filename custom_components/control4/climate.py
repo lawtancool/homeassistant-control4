@@ -138,46 +138,8 @@ class C4ClimateDevice(ClimateDevice):
         return self._hvac_mode
 
     @property
-    def target_temperature_high(self):
-        return self._target_temp_high
-
-    @property
-    def target_temperature_low(self):
-        return self._target_temp_low
-
-    def __init__(self, hass, name, base_url, proxy_id, timeout):
-        self._state = CURRENT_HVAC_IDLE
-        self._hvac_mode = HVAC_MODE_OFF
-        self.hass = hass
-        self._name = name
-        self._base_url = base_url;
-        self._proxy_id = proxy_id;
-        self._timeout = timeout
-        self._current_temp = 0
-       # self._target_temp_high = 0
-        self._target_temp = 0
-        self._unit = TEMP_FAHRENHEIT
-        self._hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_HEAT_COOL]
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def temperature_unit(self):
-        return self._unit
-
-    @property
-    def precision(self):
-        return 1
-
-    @property
-    def current_temperature(self):
-        return self._current_temp
-
-    @property
-    def hvac_mode(self):
-        return self._hvac_mode
+    def hvac_action(self):
+        return self._state
 
     @property
     def target_temperature_high(self):
@@ -187,48 +149,90 @@ class C4ClimateDevice(ClimateDevice):
     def target_temperature_low(self):
         return self._target_temp_low
 
-    def __init__(self, hass, name, base_url, proxy_id, timeout):
-        self._state = CURRENT_HVAC_IDLE
-        self._hvac_mode = HVAC_MODE_OFF
-        self.hass = hass
-        self._name = name
-        self._base_url = base_url;
-        self._proxy_id = proxy_id;
-        self._timeout = timeout
-        self._current_temp = 0
-        #self._target_temp_high = 0
-        self._target_temp = 0
-        self._unit = TEMP_FAHRENHEIT
-        self._hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_HEAT_COOL]
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def temperature_unit(self):
-        return self._unit
-
-    @property
-    def precision(self):
-        return 1
-
-    @property
-    def current_temperature(self):
-        return self._current_temp
-
-    @property
-    def hvac_mode(self):
-        """Return current operation ie. heat, cool, idle."""
-        return self._hvac_mode
-
-    #@property
-    #def target_temperature_high(self):
-    #    return self._target_temp_high
-
-    @property
-    def target_temperature(self):
-        return self._target_temp
+    # def __init__(self, hass, name, base_url, proxy_id, timeout):
+    #     self._state = CURRENT_HVAC_IDLE
+    #     self._hvac_mode = HVAC_MODE_OFF
+    #     self.hass = hass
+    #     self._name = name
+    #     self._base_url = base_url;
+    #     self._proxy_id = proxy_id;
+    #     self._timeout = timeout
+    #     self._current_temp = 0
+    #    # self._target_temp_high = 0
+    #     self._target_temp = 0
+    #     self._unit = TEMP_FAHRENHEIT
+    #     self._hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_HEAT_COOL]
+    #
+    # @property
+    # def name(self):
+    #     return self._name
+    #
+    # @property
+    # def temperature_unit(self):
+    #     return self._unit
+    #
+    # @property
+    # def precision(self):
+    #     return 1
+    #
+    # @property
+    # def current_temperature(self):
+    #     return self._current_temp
+    #
+    # @property
+    # def hvac_mode(self):
+    #     return self._hvac_mode
+    #
+    # @property
+    # def target_temperature_high(self):
+    #     return self._target_temp_high
+    #
+    # @property
+    # def target_temperature_low(self):
+    #     return self._target_temp_low
+    #
+    # def __init__(self, hass, name, base_url, proxy_id, timeout):
+    #     self._state = CURRENT_HVAC_IDLE
+    #     self._hvac_mode = HVAC_MODE_OFF
+    #     self.hass = hass
+    #     self._name = name
+    #     self._base_url = base_url;
+    #     self._proxy_id = proxy_id;
+    #     self._timeout = timeout
+    #     self._current_temp = 0
+    #     #self._target_temp_high = 0
+    #     self._target_temp = 0
+    #     self._unit = TEMP_FAHRENHEIT
+    #     self._hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_HEAT_COOL]
+    #
+    # @property
+    # def name(self):
+    #     return self._name
+    #
+    # @property
+    # def temperature_unit(self):
+    #     return self._unit
+    #
+    # @property
+    # def precision(self):
+    #     return 1
+    #
+    # @property
+    # def current_temperature(self):
+    #     return self._current_temp
+    #
+    # @property
+    # def hvac_mode(self):
+    #     """Return current operation ie. heat, cool, idle."""
+    #     return self._hvac_mode
+    #
+    # #@property
+    # #def target_temperature_high(self):
+    # #    return self._target_temp_high
+    #
+    # @property
+    # def target_temperature(self):
+    #     return self._target_temp
 
     def set_temperature(self, **kwargs):
         temperature = kwargs.get(ATTR_TEMPERATURE)
