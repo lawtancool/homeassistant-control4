@@ -11,15 +11,15 @@ import voluptuous as vol
 import urllib.parse as urlparse
 from urllib.parse import urlencode
 import json
+import asyncio
 
 from homeassistant.components.media_player import (
-    DOMAIN, MEDIA_PLAYER_SCHEMA, PLATFORM_SCHEMA, SUPPORT_VOLUME_SET, MediaPlayerDevice)
+    DOMAIN, PLATFORM_SCHEMA, SUPPORT_VOLUME_SET, MediaPlayerDevice)
 from homeassistant.const import (CONF_NAME, CONF_RESOURCE, CONF_TIMEOUT)
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.template import Template
-from homeassistant.util.async_ import run_callback_threadsafe
-from homeassistant.util.async_ import run_coroutine_threadsafe
+
 
 CONF_BASE_URL = 'base_url'
 CONF_PROXY_ID = 'proxy_id'
@@ -85,7 +85,7 @@ class C4Media(MediaPlayerDevice):
    # @asyncio.coroutine
     def set_volume_level(self, volume):
         VOLUME_REAL = int(volume*100)
-        run_coroutine_threadsafe(self.update_state(VOLUME_VARIABLE_ID, VOLUME_REAL), self.hass.loop).result()
+        asyncio.run_coroutine_threadsafe(self.update_state(VOLUME_VARIABLE_ID, VOLUME_REAL), self.hass.loop).result()
 
         VOLUME_REAL_STRING = str(VOLUME_REAL)
         VOLUME_VARIABLE_ID_STRING = str(VOLUME_VARIABLE_ID)

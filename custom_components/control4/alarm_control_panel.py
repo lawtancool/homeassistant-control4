@@ -11,6 +11,7 @@ import voluptuous as vol
 import urllib.parse as urlparse
 from urllib.parse import urlencode
 import json
+import asyncio
 
 import homeassistant.components.alarm_control_panel as alarm
 from homeassistant.components.alarm_control_panel import PLATFORM_SCHEMA
@@ -18,8 +19,6 @@ from homeassistant.const import (CONF_NAME, CONF_TIMEOUT, STATE_ALARM_ARMED_AWAY
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.template import Template
-from homeassistant.util.async_ import run_callback_threadsafe
-from homeassistant.util.async_ import run_coroutine_threadsafe
 import homeassistant.util.dt as dt_util
 
 CONF_BASE_URL = 'base_url'
@@ -141,7 +140,7 @@ class C4AlarmControlPanel(alarm.AlarmControlPanel):
               'proxyID': self._proxy_id,
               'variableID': ','.join([DISARMED_VARIABLE_ID, ARMED_HOME_VARIABLE_ID, ARMED_AWAY_VARIABLE_ID])
           }
-          
+
         url = self.get_url(self._base_url, params)
 
         websession = async_get_clientsession(self.hass)
@@ -163,11 +162,11 @@ class C4AlarmControlPanel(alarm.AlarmControlPanel):
             self._disarmed = "0"
             self._armedhome = "0"
             self._armedaway = "1"
-          elif json_text[USE_V2_VARIABLE_ID] == "Stay":       
+          elif json_text[USE_V2_VARIABLE_ID] == "Stay":
             self._disarmed = "0"
             self._armedhome = "1"
             self._armedaway = "0"
-          elif json_text[USE_V2_VARIABLE_ID] == "":       
+          elif json_text[USE_V2_VARIABLE_ID] == "":
             self._disarmed = "1"
             self._armedhome = "0"
             self._armedaway = "0"
