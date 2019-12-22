@@ -90,6 +90,10 @@ class C4AlarmControlPanel(alarm.AlarmControlPanel):
             return STATE_ALARM_ARMED_AWAY
         else:
             _LOGGER.error("Alarm state invalid!", self._disarmed, self._armedhome, self._armedaway)
+            
+    @property
+    def supported_features(self) -> int:
+        return 0
 
     def get_url(self, url, params):
         url_parts = list(urlparse.urlparse(url))
