@@ -26,6 +26,7 @@ from homeassistant.components.climate.const import (
     ATTR_TARGET_TEMP_LOW,
     ATTR_CURRENT_TEMPERATURE,
     SUPPORT_TARGET_TEMPERATURE,
+    SUPPORT_TARGET_TEMPERATURE_RANGE
 )
 from homeassistant.const import (
     CONF_NAME,
@@ -38,19 +39,31 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.template import Template
 
+TIMEOUT = 10
+
 CONF_BASE_URL = 'base_url'
 CONF_PROXY_ID = 'proxy_id'
+CONF_WEB_TWO_WAY_PORT = 'web_two_way_port'
+CONF_WEB_EVENT_PORT = 'web_event_port'
 
-DEFAULT_NAME = 'Control4 Light'
+DEFAULT_NAME = 'Control4 Thermostat'
+DEFAULT_WEB_TWO_WAY_PORT = 9000
+DEFAULT_WEB_EVENT_PORT = 8080
 DEFAULT_TIMEOUT = 10
 STATE_VARIABLE_ID = '1107'
 MODE_VARIABLE_ID = '1104'
-CURRENT_TEMP_VARIABLE_ID = '1131'
+CURRENT_TEMP_VARIABLE_ID = '1130'
+#Change to 1131 for current temp in CELSIUS
 UNIT_VARIABLE_ID = '1100'
-TARGET_TEMP_HIGH_VARIABLE_ID = '1135'
-TARGET_TEMP_LOW_VARIABLE_ID = '1133'
 
-SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE)
+TARGET_TEMP_HIGH_VARIABLE_ID = '1134'
+#Change to 1135 for high temp in CELSIUS
+
+TARGET_TEMP_LOW_VARIABLE_ID = '1132'
+#Change to 1133 for high temp in CELSIUS
+
+SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE | SUPPORT_TARGET_TEMPERATURE_RANGE)
+#SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE)
 
 MODE_MAPPING = {
     "Off": HVAC_MODE_OFF,
@@ -74,37 +87,40 @@ UNIT_MAPPING = {
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_BASE_URL): cv.url,
     vol.Required(CONF_PROXY_ID): cv.positive_int,
+    vol.Optional(CONF_WEB_TWO_WAY_PORT, default=DEFAULT_WEB_TWO_WAY_PORT): cv.positive_int,
+    vol.Optional(CONF_WEB_EVENT_PORT, default=DEFAULT_WEB_EVENT_PORT): cv.positive_int,
     vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     vol.Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): cv.positive_int,
 })
 
 _LOGGER = logging.getLogger(__name__)
 
-
 # pylint: disable=unused-argument,
 @asyncio.coroutine
 def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     name = config.get(CONF_NAME)
-    base_url = config.get(CONF_BASE_URL)
+    base_url = config.get(CONF_BASE_URL) + ':' + str(config.get(CONF_WEB_TWO_WAY_PORT)) + '/'
+    event_url = config.get(CONF_BASE_URL) + ':' + str(config.get(CONF_WEB_EVENT_PORT)) + '/'
     proxy_id = config.get(CONF_PROXY_ID)
     timeout = config.get(CONF_TIMEOUT)
 
     yield from async_add_devices(
-        [C4ClimateDevice(hass, name, base_url, proxy_id, timeout)])
+        [C4ClimateDevice(hass, name, base_url, proxy_id, timeout, event_url)])
 
 class C4ClimateDevice(ClimateDevice):
 
-    def __init__(self, hass, name, base_url, proxy_id, timeout):
+    def __init__(self, hass, name, base_url, proxy_id, timeout, event_url):
         self._state = CURRENT_HVAC_IDLE
         self._hvac_mode = HVAC_MODE_OFF
         self.hass = hass
         self._name = name
         self._base_url = base_url;
+        self._event_url = event_url;
         self._proxy_id = proxy_id;
         self._timeout = timeout
         self._current_temp = 0
-       # self._target_temp_high = 0
-        self._target_temp = 0
+        self._target_temp_high = 0
+        self._target_temp_low = 0
         self._unit = TEMP_FAHRENHEIT
         self._hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_HEAT_COOL]
 
@@ -134,40 +150,86 @@ class C4ClimateDevice(ClimateDevice):
     def current_temperature(self):
         return self._current_temp
 
-    @property
-    def target_temperature(self):
-        return self._target_temp
-
-    # @property
-    # def target_temperature_high(self):
-    #     return self._target_temp_high
-    #
-    # @property
-    # def target_temperature_low(self):
-    #     return self._target_temp_low
+    #@property
+    #def target_temperature(self):
+    #    return self._target_temp
 
     @property
     def hvac_mode(self):
         return self._hvac_mode
 
     @property
+    def temperature_unit(self):
+        return self._unit
+
+    @property
+    def precision(self):
+        return 1
+
+    @property
+    def current_temperature(self):
+        return self._current_temp
+
+    @property
     def hvac_action(self):
         return self._state
 
-    def set_temperature(self, **kwargs):
-        temperature = kwargs.get(ATTR_TEMPERATURE)
-        if temperature is None:
-            return
-        asyncio.run_coroutine_threadsafe(self.update_state(TARGET_TEMP_LOW_VARIABLE_ID, temperature), self.hass.loop).result()
-        self._target_temp = temperature
-        #else:
-        #    asyncio.run_coroutine_threadsafe(self.update_state(TARGET_TEMP_HIGH_VARIABLE_ID, int(kwargs['target_temp_high'])), self.hass.loop).result()
-        #    self._target_temp_high = int(kwargs['target_temp_high'])
+    @property
+    def target_temperature_high(self):
+        return self._target_temp_high
 
-    def set_hvac_mode(self, hvac_mode):
-        asyncio.run_coroutine_threadsafe(self.update_state(MODE_VARIABLE_ID, hvac_mode),
-                                 self.hass.loop).result()
-        self._hvac_mode = hvac_mode
+    @property
+    def target_temperature_low(self):
+        return self._target_temp_low
+
+    def set_temperature(self, **kwargs):
+        temp_low = int(kwargs.get('target_temp_low', 0))
+        temp_high = int(kwargs.get('target_temp_high', 0))
+        
+        if temp_low == 0 or temp_high == 0:
+            return
+        
+        asyncio.run_coroutine_threadsafe(self.update_state(TARGET_TEMP_LOW_VARIABLE_ID, temp_low), self.hass.loop).result()
+        self._target_temp_low = temp_low
+        asyncio.run_coroutine_threadsafe(self.update_state(TARGET_TEMP_HIGH_VARIABLE_ID, temp_high), self.hass.loop).result()
+        self._target_temp_high = temp_high
+        
+
+# The following method is broken with the 2 way web driver, I've implemented the web event
+# driver, and programming in COntrol4 to work around this. The 2-way web driver cannot update
+# the HVAC mode in control4, it appears to be an underlying issue with LUA
+#    def set_hvac_mode(self, hvac_mode):
+#        asyncio.run_coroutine_threadsafe(self.update_state(MODE_VARIABLE_ID, hvac_mode),
+#                                 self.hass.loop).result()
+#        self._hvac_mode = hvac_mode
+
+#This method uses the Web event driver to issue commands to Control4 to change the HVAC Mode
+    @asyncio.coroutine
+    def async_set_hvac_mode(self, hvac_mode):
+      url_str = self._event_url
+      if hvac_mode == HVAC_MODE_HEAT:
+        self._current_operation = HVAC_MODE_HEAT
+        self._enabled = True
+        url_str = url_str + 'Heat'
+      elif hvac_mode == HVAC_MODE_COOL:
+        self._current_operation = HVAC_MODE_COOL
+        self._enabled = True
+        url_str = url_str + 'Cool'
+      elif hvac_mode == HVAC_MODE_HEAT_COOL:
+        self._current_operation = HVAC_MODE_HEAT_COOL
+        self._enabled = True
+        url_str = url_str + 'Auto'
+      elif hvac_mode == HVAC_MODE_OFF:
+        self._current_operation = HVAC_MODE_OFF
+        self._enabled = False
+        url_str = url_str + 'Off'
+
+      websession = async_get_clientsession(self.hass)
+      request = None
+      with async_timeout.timeout(TIMEOUT, loop=self.hass.loop):
+        request = yield from websession.get(url_str)
+      return
+
 
     def get_url(self, url, params):
         url_parts = list(urlparse.urlparse(url))
@@ -234,8 +296,8 @@ class C4ClimateDevice(ClimateDevice):
             self._state = STATE_MAPPING[json_text[STATE_VARIABLE_ID]]
             self._hvac_mode = MODE_MAPPING[json_text[MODE_VARIABLE_ID]]
             self._current_temp = int(json_text[CURRENT_TEMP_VARIABLE_ID])
-            #self._target_temp_high = int(json_text[TARGET_TEMP_HIGH_VARIABLE_ID])
-            self._target_temp = int(json_text[TARGET_TEMP_LOW_VARIABLE_ID])
+            self._target_temp_high = int(json_text[TARGET_TEMP_HIGH_VARIABLE_ID])
+            self._target_temp_low = int(json_text[TARGET_TEMP_LOW_VARIABLE_ID])
             self._unit = UNIT_MAPPING[json_text[UNIT_VARIABLE_ID]]
         except ValueError:
             _LOGGER.warning('Invalid value received')
