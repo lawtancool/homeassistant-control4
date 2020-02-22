@@ -50,20 +50,14 @@ DEFAULT_NAME = 'Control4 Thermostat'
 DEFAULT_WEB_TWO_WAY_PORT = 9000
 DEFAULT_WEB_EVENT_PORT = 8080
 DEFAULT_TIMEOUT = 10
+
 STATE_VARIABLE_ID = '1107'
 MODE_VARIABLE_ID = '1104'
 CURRENT_TEMP_VARIABLE_ID = '1130'
-#Change to 1131 for current temp in CELSIUS
 UNIT_VARIABLE_ID = '1100'
-
 TARGET_TEMP_HIGH_VARIABLE_ID = '1134'
-#Change to 1135 for high temp in CELSIUS
-
 TARGET_TEMP_LOW_VARIABLE_ID = '1132'
-#Change to 1133 for high temp in CELSIUS
-
-SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE | SUPPORT_TARGET_TEMPERATURE_RANGE)
-#SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE)
+SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE_RANGE | SUPPORT_TARGET_TEMPERATURE)
 
 MODE_MAPPING = {
     "Off": HVAC_MODE_OFF,
@@ -90,12 +84,12 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_WEB_TWO_WAY_PORT, default=DEFAULT_WEB_TWO_WAY_PORT): cv.positive_int,
     vol.Optional(CONF_WEB_EVENT_PORT, default=DEFAULT_WEB_EVENT_PORT): cv.positive_int,
     vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
-    vol.Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): cv.positive_int,
+    vol.Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): cv.positive_int
 })
 
 _LOGGER = logging.getLogger(__name__)
 
-# pylint: disable=unused-argument,
+
 @asyncio.coroutine
 def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     name = config.get(CONF_NAME)
@@ -104,8 +98,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     proxy_id = config.get(CONF_PROXY_ID)
     timeout = config.get(CONF_TIMEOUT)
 
-    yield from async_add_devices(
-        [C4ClimateDevice(hass, name, base_url, proxy_id, timeout, event_url)])
+    async_add_devices([C4ClimateDevice(hass, name, base_url, proxy_id, timeout, event_url)])
 
 class C4ClimateDevice(ClimateDevice):
 
@@ -121,6 +114,7 @@ class C4ClimateDevice(ClimateDevice):
         self._current_temp = 0
         self._target_temp_high = 0
         self._target_temp_low = 0
+        self._target_temp = 0
         self._unit = TEMP_FAHRENHEIT
         self._hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_HEAT_COOL]
 
@@ -131,7 +125,12 @@ class C4ClimateDevice(ClimateDevice):
     @property
     def supported_features(self):
         """Return the list of supported features."""
-        return SUPPORT_FLAGS
+        if self._hvac_mode == HVAC_MODE_HEAT or self._hvac_mode == HVAC_MODE_COOL:
+          return SUPPORT_TARGET_TEMPERATURE
+        elif self._hvac_mode == HVAC_MODE_HEAT_COOL:
+          return SUPPORT_TARGET_TEMPERATURE_RANGE
+        else:
+          return SUPPORT_FLAGS
 
     @property
     def hvac_modes(self):
@@ -150,9 +149,9 @@ class C4ClimateDevice(ClimateDevice):
     def current_temperature(self):
         return self._current_temp
 
-    #@property
-    #def target_temperature(self):
-    #    return self._target_temp
+    @property
+    def target_temperature(self):
+        return self._target_temp
 
     @property
     def hvac_mode(self):
@@ -183,17 +182,27 @@ class C4ClimateDevice(ClimateDevice):
         return self._target_temp_low
 
     def set_temperature(self, **kwargs):
-        temp_low = int(kwargs.get('target_temp_low', 0))
-        temp_high = int(kwargs.get('target_temp_high', 0))
+        temp_low = kwargs.get(ATTR_TARGET_TEMP_LOW)
+        temp_high = kwargs.get(ATTR_TARGET_TEMP_HIGH)
+        single_temp = kwargs.get(ATTR_TEMPERATURE)
         
-        if temp_low == 0 or temp_high == 0:
-            return
-        
-        asyncio.run_coroutine_threadsafe(self.update_state(TARGET_TEMP_LOW_VARIABLE_ID, temp_low), self.hass.loop).result()
-        self._target_temp_low = temp_low
-        asyncio.run_coroutine_threadsafe(self.update_state(TARGET_TEMP_HIGH_VARIABLE_ID, temp_high), self.hass.loop).result()
-        self._target_temp_high = temp_high
-        
+        if single_temp is not None:
+          _LOGGER.debug('Single Temp Update Mode: ' + str(single_temp))
+          if self._hvac_mode == HVAC_MODE_HEAT:
+            asyncio.run_coroutine_threadsafe(self.update_state(TARGET_TEMP_LOW_VARIABLE_ID, int(single_temp)), self.hass.loop).result()
+            self._target_temp = single_temp
+          elif self._hvac_mode == HVAC_MODE_COOL:
+            asyncio.run_coroutine_threadsafe(self.update_state(TARGET_TEMP_HIGH_VARIABLE_ID, int(single_temp)), self.hass.loop).result()
+            self._target_temp = single_temp
+        elif temp_low != 0 and temp_high != 0:
+          _LOGGER.debug('Dual Update Mode: ' + str(temp_low) + ' to ' + str(temp_high))
+          asyncio.run_coroutine_threadsafe(self.update_state(TARGET_TEMP_LOW_VARIABLE_ID, int(temp_low)), self.hass.loop).result()
+          self._target_temp_low = temp_low
+          asyncio.run_coroutine_threadsafe(self.update_state(TARGET_TEMP_HIGH_VARIABLE_ID, int(temp_high)), self.hass.loop).result()
+          self._target_temp_high = temp_high
+        else:
+          _LOGGER.warning('Invalid Temperature Values Passed to Update Method.')
+          return
 
 # The following method is broken with the 2 way web driver, I've implemented the web event
 # driver, and programming in COntrol4 to work around this. The 2-way web driver cannot update
@@ -204,6 +213,7 @@ class C4ClimateDevice(ClimateDevice):
 #        self._hvac_mode = hvac_mode
 
 #This method uses the Web event driver to issue commands to Control4 to change the HVAC Mode
+#Additional programming in the C4 director is needed to handle the commands and adjust the HVAC Mode
     @asyncio.coroutine
     def async_set_hvac_mode(self, hvac_mode):
       url_str = self._event_url
@@ -224,11 +234,15 @@ class C4ClimateDevice(ClimateDevice):
         self._enabled = False
         url_str = url_str + 'Off'
 
-      websession = async_get_clientsession(self.hass)
-      request = None
-      with async_timeout.timeout(TIMEOUT, loop=self.hass.loop):
-        request = yield from websession.get(url_str)
-      return
+      try:
+        websession = async_get_clientsession(self.hass)
+        request = None
+        with async_timeout.timeout(TIMEOUT, loop=self.hass.loop):
+          request = yield from websession.get(url_str)
+        return
+      except:
+        _LOGGER.warning('Web Event driver on Control4 Controller is not responding. Please Install the Web Event driver in order to control HVAC Mode')
+        return
 
 
     def get_url(self, url, params):
@@ -299,5 +313,12 @@ class C4ClimateDevice(ClimateDevice):
             self._target_temp_high = int(json_text[TARGET_TEMP_HIGH_VARIABLE_ID])
             self._target_temp_low = int(json_text[TARGET_TEMP_LOW_VARIABLE_ID])
             self._unit = UNIT_MAPPING[json_text[UNIT_VARIABLE_ID]]
+            
+            if self._hvac_mode == HVAC_MODE_HEAT:
+              self._target_temp = int(json_text[TARGET_TEMP_LOW_VARIABLE_ID])
+            elif self._hvac_mode == HVAC_MODE_COOL:
+              self._target_temp = int(json_text[TARGET_TEMP_HIGH_VARIABLE_ID])
+            else:
+              self._target_temp = 0
         except ValueError:
             _LOGGER.warning('Invalid value received')
