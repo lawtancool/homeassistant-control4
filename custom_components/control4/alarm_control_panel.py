@@ -58,8 +58,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     timeout = config.get(CONF_TIMEOUT)
     use_v2 = config.get(CONF_USE_V2)
 
-    yield from async_add_devices(
-        [C4AlarmControlPanel(hass, name, base_url, proxy_id, timeout, use_v2)])
+    async_add_devices([C4AlarmControlPanel(hass, name, base_url, proxy_id, timeout, use_v2)])
 
 class C4AlarmControlPanel(alarm.AlarmControlPanel):
 
