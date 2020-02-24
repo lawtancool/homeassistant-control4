@@ -20,9 +20,11 @@ from homeassistant.helpers.template import Template
 
 CONF_BASE_URL = 'base_url'
 CONF_PROXY_ID = 'proxy_id'
+CONF_SWITCH_ONLY = 'switch_only'
 
 DEFAULT_NAME = 'Control4 Light'
 DEFAULT_TIMEOUT = 10
+DEFAULT_SWITCH_ONLY = False
 STATE_VARIABLE_ID = '1000'
 BRIGHTNESS_VARIABLE_ID = '1001'
 
@@ -31,6 +33,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_PROXY_ID): cv.positive_int,
     vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     vol.Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): cv.positive_int,
+    vol.Optional(CONF_SWITCH_ONLY, default=DEFAULT_SWITCH_ONLY): cv.boolean
 })
 
 _LOGGER = logging.getLogger(__name__)
@@ -43,13 +46,13 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     base_url = config.get(CONF_BASE_URL)
     proxy_id = config.get(CONF_PROXY_ID)
     timeout = config.get(CONF_TIMEOUT)
+    switch_only = config.get(CONF_SWITCH_ONLY)
 
-    yield from async_add_devices(
-        [C4Light(hass, name, base_url, proxy_id, timeout)])
+    async_add_devices([C4Light(hass, name, base_url, proxy_id, timeout, switch_only)])
 
 class C4Light(Light):
 
-    def __init__(self, hass, name, base_url, proxy_id, timeout):
+    def __init__(self, hass, name, base_url, proxy_id, timeout, switch_only):
         self._state = None
         self._brightness = 0
         self.hass = hass
@@ -57,6 +60,7 @@ class C4Light(Light):
         self._base_url = base_url;
         self._proxy_id = proxy_id;
         self._timeout = timeout
+        self._switch_only = switch_only
 
     @property
     def name(self):
@@ -121,11 +125,19 @@ class C4Light(Light):
     @asyncio.coroutine
     def async_update(self):
         """Get the latest data from API and update the state."""
-        params = {
+        if self._switch_only:
+          params = {
+              'command': 'get',
+              'proxyID': self._proxy_id,
+              'variableID': ','.join([STATE_VARIABLE_ID])
+          }
+        else:
+          params = {
             'command': 'get',
             'proxyID': self._proxy_id,
             'variableID': ','.join([STATE_VARIABLE_ID, BRIGHTNESS_VARIABLE_ID])
-        }
+          }
+        
         url = self.get_url(self._base_url, params)
 
         websession = async_get_clientsession(self.hass)
@@ -151,9 +163,11 @@ class C4Light(Light):
         else:
             self._state = None
 
-        brightness = json_text[BRIGHTNESS_VARIABLE_ID]
+        if self._switch_only == False:
+          brightness = json_text[BRIGHTNESS_VARIABLE_ID]
 
-        try:
-            self._brightness = int(int(brightness)*255/100)
-        except ValueError:
-            _LOGGER.warning('Invalid brightness value received')
+          try:
+              self._brightness = int(int(brightness)*255/100)
+          except ValueError:
+              _LOGGER.warning('Invalid brightness value received')
+
