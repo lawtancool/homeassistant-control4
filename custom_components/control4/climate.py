@@ -54,7 +54,7 @@ DEFAULT_TIMEOUT = 10
 STATE_VARIABLE_ID = '1107'
 MODE_VARIABLE_ID = '1104'
 CURRENT_TEMP_VARIABLE_ID = '1130'
-UNIT_VARIABLE_ID = '1100'
+#UNIT_VARIABLE_ID = '1100'
 TARGET_TEMP_HIGH_VARIABLE_ID = '1134'
 TARGET_TEMP_LOW_VARIABLE_ID = '1132'
 SUPPORT_FLAGS = (SUPPORT_TARGET_TEMPERATURE_RANGE | SUPPORT_TARGET_TEMPERATURE)
@@ -158,16 +158,8 @@ class C4ClimateDevice(ClimateDevice):
         return self._hvac_mode
 
     @property
-    def temperature_unit(self):
-        return self._unit
-
-    @property
     def precision(self):
         return 1
-
-    @property
-    def current_temperature(self):
-        return self._current_temp
 
     @property
     def hvac_action(self):
@@ -286,7 +278,7 @@ class C4ClimateDevice(ClimateDevice):
             'command': 'get',
             'proxyID': self._proxy_id,
             'variableID': ','.join([STATE_VARIABLE_ID, MODE_VARIABLE_ID,
-                CURRENT_TEMP_VARIABLE_ID, UNIT_VARIABLE_ID, TARGET_TEMP_HIGH_VARIABLE_ID,
+                CURRENT_TEMP_VARIABLE_ID, TARGET_TEMP_HIGH_VARIABLE_ID,
                 TARGET_TEMP_LOW_VARIABLE_ID])
         }
         url = self.get_url(self._base_url, params)
@@ -312,7 +304,7 @@ class C4ClimateDevice(ClimateDevice):
             self._current_temp = int(json_text[CURRENT_TEMP_VARIABLE_ID])
             self._target_temp_high = int(json_text[TARGET_TEMP_HIGH_VARIABLE_ID])
             self._target_temp_low = int(json_text[TARGET_TEMP_LOW_VARIABLE_ID])
-            self._unit = UNIT_MAPPING[json_text[UNIT_VARIABLE_ID]]
+           # self._unit = UNIT_MAPPING[json_text[UNIT_VARIABLE_ID]]
             
             if self._hvac_mode == HVAC_MODE_HEAT:
               self._target_temp = int(json_text[TARGET_TEMP_LOW_VARIABLE_ID])
