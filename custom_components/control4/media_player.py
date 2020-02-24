@@ -50,8 +50,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     timeout = config.get(CONF_TIMEOUT)
     #output_zone = config.get(CONF_OUTPUT_ZONE)
 
-    yield from async_add_devices(
-        [C4Media(hass, name, base_url, proxy_id, timeout)])
+    async_add_devices([C4Media(hass, name, base_url, proxy_id, timeout)])
 
 class C4Media(MediaPlayerDevice):
 
