@@ -74,6 +74,10 @@ class C4Light(Light):
     def brightness(self):
         return self._brightness
 
+    @property
+    def supported_features(self):
+        return 1
+
     @asyncio.coroutine
     def async_turn_on(self, **kwargs):
         if 'brightness' in kwargs:
