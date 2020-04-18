@@ -76,7 +76,10 @@ class C4Light(Light):
 
     @property
     def supported_features(self):
-        return 1
+        if self._switch_only == False:
+            return 1
+        else:
+            return 0
 
     @asyncio.coroutine
     def async_turn_on(self, **kwargs):
