@@ -88,7 +88,7 @@ class C4AlarmControlPanel(alarm.AlarmControlPanel):
         elif self._armedaway == "1":
             return STATE_ALARM_ARMED_AWAY
         else:
-            _LOGGER.error("Alarm state invalid!", self._disarmed, self._armedhome, self._armedaway)
+            _LOGGER.error('Alarm state invalid! disarmed={0} armedhome={1} armedaway={2}'.format(self._disarmed, self._armedhome, self._armedaway))
             
     @property
     def supported_features(self) -> int:
@@ -174,11 +174,12 @@ class C4AlarmControlPanel(alarm.AlarmControlPanel):
             self._armedhome = "0"
             self._armedaway = "0"
           else:
-            _LOGGER.warning('Invalid value received')
+            _LOGGER.error('Invalid value received! disarmed={0} armedhome={1} armedaway={2}'.format(self._disarmed, self._armedhome, self._armedaway))
         else:
           try:
               self._disarmed = json_text[DISARMED_VARIABLE_ID]
               self._armedhome = json_text[ARMED_HOME_VARIABLE_ID]
               self._armedaway = json_text[ARMED_AWAY_VARIABLE_ID]
           except ValueError:
-              _LOGGER.warning('Invalid value received')
+            _LOGGER.error('Invalid value received! disarmed={0} armedhome={1} armedaway={2}'.format(self._disarmed, self._armedhome, self._armedaway))
+
