@@ -12,7 +12,7 @@ import urllib.parse as urlparse
 from urllib.parse import urlencode
 import json
 
-from homeassistant.components.light import (ATTR_BRIGHTNESS, Light, PLATFORM_SCHEMA)
+from homeassistant.components.light import (ATTR_BRIGHTNESS, LightEntity, PLATFORM_SCHEMA)
 from homeassistant.const import (CONF_NAME, CONF_RESOURCE, CONF_TIMEOUT)
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
@@ -50,7 +50,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
 
     async_add_devices([C4Light(hass, name, base_url, proxy_id, timeout, switch_only)])
 
-class C4Light(Light):
+class C4Light(LightEntity):
 
     def __init__(self, hass, name, base_url, proxy_id, timeout, switch_only):
         self._state = None

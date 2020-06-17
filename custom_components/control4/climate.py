@@ -13,7 +13,7 @@ from urllib.parse import urlencode
 import json
 import asyncio
 
-from homeassistant.components.climate import ClimateDevice, PLATFORM_SCHEMA
+from homeassistant.components.climate import ClimateEntity, PLATFORM_SCHEMA
 from homeassistant.components.climate.const import (
     CURRENT_HVAC_COOL,
     CURRENT_HVAC_HEAT,
@@ -100,7 +100,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
 
     async_add_devices([C4ClimateDevice(hass, name, base_url, proxy_id, timeout, event_url)])
 
-class C4ClimateDevice(ClimateDevice):
+class C4ClimateDevice(ClimateEntity):
 
     def __init__(self, hass, name, base_url, proxy_id, timeout, event_url):
         self._state = CURRENT_HVAC_IDLE
