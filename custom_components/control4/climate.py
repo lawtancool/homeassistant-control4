@@ -241,6 +241,11 @@ class C4ClimateDevice(ClimateEntity):
           _LOGGER.warning('Invalid Temperature Values Passed to Update Method.')
           return
 
+    def set_humidity(self, humidity):
+        _LOGGER.debug('Humidity Update Mode: ' + str(humidity))
+        asyncio.run_coroutine_threadsafe(self.update_state(TARGET_HUMIDITY_VARIABLE_ID, int(humidity)), self.hass.loop).result()
+        self._target_humidity = humidity
+
 # The following method is broken with the 2 way web driver, I've implemented the web event
 # driver, and programming in COntrol4 to work around this. The 2-way web driver cannot update
 # the HVAC mode in control4, it appears to be an underlying issue with LUA
