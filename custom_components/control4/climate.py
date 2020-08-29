@@ -130,6 +130,7 @@ class C4ClimateDevice(ClimateEntity):
     def __init__(self, hass, name, base_url, proxy_id, timeout, event_url,
             dehumidify):
         self._state = CURRENT_HVAC_IDLE
+        self._humidity_state = CURRENT_HVAC_IDLE
         self._hvac_mode = HVAC_MODE_OFF
         self._humidity_hvac_mode = HVAC_MODE_OFF
         self.hass = hass
@@ -159,12 +160,12 @@ class C4ClimateDevice(ClimateEntity):
     def supported_features(self):
         """Return the list of supported features."""
         support_flags = 0
-        if self._hvac_mode == HVAC_MODE_HEAT or self._hvac_mode == HVAC_MODE_COOL:
+        if self._hvac_mode == HVAC_MODE_HEAT or self._hvac_mode == HVAC_MODE_COOL or self._humidity_hvac_mode == HVAC_MODE_DRY:
           support_flags = support_flags | SUPPORT_TARGET_TEMPERATURE
         elif self._hvac_mode == HVAC_MODE_HEAT_COOL:
           support_flags = support_flags | SUPPORT_TARGET_TEMPERATURE_RANGE
         else:
-          support_flags = support_flags | SUPPORT_FLAGS
+          support_flags = support_flags | SUPPORT_TARGET_TEMPERATURE_RANGE
         if self._dehumidify:
           support_flags = support_flags | SUPPORT_TARGET_HUMIDITY
         return support_flags
@@ -192,6 +193,8 @@ class C4ClimateDevice(ClimateEntity):
 
     @property
     def hvac_mode(self):
+        if self._dehumidify and self._hvac_mode == HVAC_MODE_OFF:
+          return self._humidity_hvac_mode
         return self._hvac_mode
 
     @property
@@ -200,6 +203,8 @@ class C4ClimateDevice(ClimateEntity):
 
     @property
     def hvac_action(self):
+        if self._dehumidify and self._state == CURRENT_HVAC_IDLE:
+          return self._humidity_state
         return self._state
 
     @property
@@ -364,6 +369,8 @@ class C4ClimateDevice(ClimateEntity):
             if self._hvac_mode == HVAC_MODE_HEAT:
               self._target_temp = int(json_text[TARGET_TEMP_LOW_VARIABLE_ID])
             elif self._hvac_mode == HVAC_MODE_COOL:
+              self._target_temp = int(json_text[TARGET_TEMP_HIGH_VARIABLE_ID])
+            elif self._humidity_hvac_mode == HVAC_MODE_DRY:
               self._target_temp = int(json_text[TARGET_TEMP_HIGH_VARIABLE_ID])
             else:
               self._target_temp = 0
