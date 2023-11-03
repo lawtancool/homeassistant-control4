@@ -1,6 +1,8 @@
 # homeassistant-control4
 These custom components for Home Assistant (https://www.home-assistant.io) allow you to integrate Control4 systems into Home Assistant. Currently, lights, thermostats, alarm systems, and media room volume control are supported. 
 
+Testing
+
 How to use:
 -------------
 - Install the Web2Way driver into your Control4 project using Composer Pro (2.9+ recommended): https://github.com/itsfrosty/control4-2way-web-driver (You may need your dealer to do this if you don't have access to the Control4 Composer Pro program)
