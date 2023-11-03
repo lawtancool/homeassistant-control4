@@ -1,7 +1,7 @@
 # homeassistant-control4
 These custom components for Home Assistant (https://www.home-assistant.io) allow you to integrate Control4 systems into Home Assistant. Currently, lights, thermostats, alarm systems, and media room volume control are supported. 
 
-Testing
+Testing #2
 
 How to use:
 -------------
