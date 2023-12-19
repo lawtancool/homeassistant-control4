@@ -1,4 +1,9 @@
 # homeassistant-control4
+> [!WARNING]
+> This integration is no longer maintained and is likely broken on newer versions of Home Assistant.
+>
+> Consider migrating to https://github.com/lawtancool/hass-control4, which is faster, supports the latest Home Assistant releases, and does not require a custom driver to be installed on the Control4 system. 
+
 These custom components for Home Assistant (https://www.home-assistant.io) allow you to integrate Control4 systems into Home Assistant. Currently, lights, thermostats, alarm systems, and media room volume control are supported. 
 
 How to use:
